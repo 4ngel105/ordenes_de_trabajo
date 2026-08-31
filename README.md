@@ -3,7 +3,6 @@
 **Estudiante:** Roberto Angel Ayala Lecoña  
 **Materia:** Arquitectura de Software · UAB · Gestión 2026-2 · Ing. Josue Chura  
 **Repositorio (expediente):** https://github.com/4ngel105/ordenes_de_trabajo  
-**Entrega:** H1 — Inventario del caso (vence dom 30-ago-2026, 23:59)
 
 ---
 
@@ -38,7 +37,7 @@ Abajo va el resumen de los 5 puntos; cada documento amplía el detalle.
 
 ---
 
-## 1. El caso, en una frase
+## 1. El caso
 
 Un taller recibe equipos (o tickets), los registra con un diagnóstico inicial, los asigna a técnicos según prioridad y sigue cada orden por estados hasta entregarla. **El cliente quiere saber cuándo estará listo; el jefe quiere saber quién tiene qué.**
 
@@ -341,7 +340,7 @@ Detalle: [docs/05-trazabilidad-rf.md](docs/05-trazabilidad-rf.md).
 
 | Hito | Entrega | Vence | Estado |
 |---|---|---|---|
-| **H1** | Inventario del caso: actores, módulos y primer diagrama de clases | dom 30-ago | ✅ entregado |
+| **H1** | Inventario del caso: actores, módulos y primer diagrama de clases | dom 30-ago |  entregado |
 | H2 | Diagrama de clases con SOLID aplicado (refactor antes/después) | dom 6-sep | pendiente |
 | H3 | Al menos 2 patrones de diseño aplicados, con justificación | dom 13-sep | pendiente |
 | H4 | Diagramas C4 niveles 1-2 en Mermaid + 1 ADR | dom 20-sep | pendiente |
