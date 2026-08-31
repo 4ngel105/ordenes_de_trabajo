@@ -15,7 +15,7 @@ La consigna permite usar IA como copiloto **declarándolo**: qué le pedí, qué
 
 ## H1 — qué le pedí
 
-- Estructurar el expediente del H1 con los 5 puntos que exige el documento del caso, para la Variante 6 y con Angular como tecnología del prototipo.
+
 - Redactar el borrador de los actores, el inventario de módulos, el primer diagrama de clases en Mermaid y el argumento de los dos atributos de calidad.
 - Escribir la sintaxis Mermaid del diagrama de clases y del diagrama de estados.
 
