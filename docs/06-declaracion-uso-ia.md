@@ -53,6 +53,4 @@ borrador es de la herramienta; con ella, el expediente es tuyo.
 
 ---
 
-## Compromiso
 
-Todo lo que está en este expediente lo puedo explicar y defender. Si en la defensa no puedo justificar una decisión, esa decisión no es mía y corresponde que se me observe.
