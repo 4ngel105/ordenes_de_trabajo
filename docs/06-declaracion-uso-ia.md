@@ -9,7 +9,7 @@ La consigna permite usar IA como copiloto **declarándolo**: qué le pedí, qué
 
 ## Herramienta
 
-**Claude (Claude Code)**, usada como copiloto de redacción y diagramación del expediente.
+**Copilot**, usada como copiloto de redacción y diagramación del expediente.
 
 ---
 
