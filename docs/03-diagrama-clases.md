@@ -1,7 +1,7 @@
 # 4. Primer diagrama de clases
 
 **Variante 6 · Órdenes de trabajo — "Taller y soporte técnico"**  
-Roberto Angel Ayala Lecoña · Herramienta: Mermaid (se renderiza directo en GitHub)
+
 
 ---
 
