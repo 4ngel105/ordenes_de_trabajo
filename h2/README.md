@@ -13,6 +13,7 @@ Roberto Angel Ayala Lecoña · Arquitectura de Software · UAB · Gestión 2026-
 | [`antes.drawio`](antes.drawio) | Diagrama **ANTES**: el modelo del H1 tal cual, con los seis olores marcados en rojo |
 | [`despues.drawio`](despues.drawio) | Diagrama **DESPUÉS**: el modelo con SOLID aplicado, interfaces en verde y clases nuevas en amarillo |
 | este `README.md` | Los dos diagramas también en Mermaid (se ven directo en GitHub) + el texto del refactor |
+| [`codigo/`](codigo/) | El mismo refactor hecho C# ejecutable, para demostrar que el diagrama no es decorativo |
 
 Los `.drawio` se abren en [app.diagrams.net](https://app.diagrams.net) (*File → Open from → Device*) o con la extensión **Draw.io Integration** de VS Code. Están guardados **sin comprimir**, así que el diff de git es legible.
 
@@ -426,6 +427,33 @@ classDiagram
 5. Saqué el `new` del dominio: la orden ahora depende de `PublicadorDeEventos` y el `switch(canal)` pasó a implementaciones de `CanalDeEnvio`, por **DIP** —tanto el dominio como la infraestructura dependen del contrato, y ninguno del otro.
 6. Separé `ConsultaDeOrdenes` (lectura) de `RepositorioDeOrdenes` (escritura) y dejé que `ReporteOperativo` dependa solo de la primera, por **ISP**: M6 es de solo lectura por diseño y ahora eso lo garantiza el tipo, no la disciplina del programador.
 7. Fijé por **LSP** el contrato de las jerarquías nuevas: toda implementación de `CanalDeEnvio` devuelve `ResultadoEnvio` y nunca lanza una excepción propia, y ningún `EstadoDeOrden` tiene efectos secundarios; si una implementación rompe eso, el polimorfismo de los puntos 3 y 5 deja de ser seguro.
+
+---
+
+## 4. El diagrama, hecho código
+
+En [`codigo/`](codigo/) está el mismo refactor en C#, escrito con la estructura de 4 actos
+(**CONTRATOS → MODELO → PIEZAS → COORDINADORES**). Sirve para demostrar que el diagrama
+DESPUÉS es implementable y que los principios no son adorno:
+
+| Acto | En el código | En [`despues.drawio`](despues.drawio) |
+|---|---|---|
+| **1 · Contratos** | `IEstadoDeOrden`, `IEstrategiaDeAsignacion`, `ICanalDeEnvio`, `IPublicadorDeEventos`, `IConsultaDeOrdenes`, `IRepositorioDeOrdenes` | Las 6 cajas verdes `«interface»` |
+| **2 · Modelo** | `Orden`, `Avance`, `Tecnico`, `PerfilDeCapacidad` | Las cajas azules del dominio |
+| **3 · Piezas** | 6 estados, 2 estrategias, 3 canales, `CalculadoraDeCostos`, `MetricasDeOrden` | Las cajas amarillas |
+| **4 · Coordinadores** | `ServicioDeOrdenes`, `ServicioDeAsignacion`, `ServicioDeNotificacion`, `ReporteOperativo` | Las cajas con flecha verde hacia un contrato |
+
+Lo que la corrida demuestra, y está en [`codigo/salidas-esperadas.txt`](codigo/salidas-esperadas.txt):
+
+- **DIP** — el *mismo* `ServicioDeOrdenes` produce `[SMTP]`, `[WHATSAPP]` y `[REGISTRO INTERNO]` en tres corridas, sin que nadie lo modifique. En el ANTES la orden avisa siempre por correo porque ella misma hace el `new`.
+- **OCP** — la *misma* orden con los *mismos* dos técnicos da Bruno con una política y Ana con la otra. El servicio que asigna no cambia.
+- **LSP** — el canal de prueba `CanalRegistroInterno` entra donde iba el de correo y el flujo no se entera. Por eso se puede probar todo el ciclo de vida sin un servidor SMTP: imposible en el ANTES.
+- **ISP** — `ReporteOperativo` recibe `IConsultaDeOrdenes` y por lo tanto no tiene `Guardar()` disponible; el invariante "M6 es de solo lectura" pasa a ser un tipo.
+- **SRP** — el costo y el vencimiento los imprime `CalculadoraDeCostos` y `MetricasDeOrden`, no la orden.
+
+> **Sobre la salida:** está derivada a mano leyendo el código, no capturada de una ejecución real —
+> la máquina donde se escribió no tiene el SDK de .NET. Para verificarla hace falta .NET 6+;
+> las instrucciones están al final de ese mismo archivo.
 
 ---
 

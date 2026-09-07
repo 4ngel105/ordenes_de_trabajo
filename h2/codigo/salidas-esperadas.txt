@@ -1,0 +1,79 @@
+========== SIGOT · ANTES ==========
+[BITACORA] OT-001: RECIBIDA -> DIAGNOSTICADA (por recepcion)
+[BITACORA] OT-001: DIAGNOSTICADA -> EN_REPARACION (por jefe)
+[BITACORA] OT-001: EN_REPARACION -> LISTA (por tecnico)
+[SMTP] Correo a cliente@correo.com: "Su orden OT-001 está lista para retirar"
+[RECHAZADO] OT-001: de LISTA no se puede pasar a CANCELADA
+Costo total: 205.50 Bs (lo calcula la propia orden)
+Vencida: True (tambien lo calcula la propia orden)
+Funciona... pero un estado nuevo o un canal nuevo = abrir la clase, y sin correo real no hay como probarla.
+
+========== SIGOT · DESPUÉS (los 5 juntos) ==========
+-- politica del jefe: menor carga --
+[ASIGNACION] OT-002 -> Bruno (carga 1/4)
+-- el jefe cambio la politica: se cambia la PIEZA, no el servicio --
+[ASIGNACION] OT-002 -> Ana (carga 3/5)
+-- produccion: aviso por correo --
+[BITACORA] OT-002: RECIBIDA -> DIAGNOSTICADA (por recepcion)
+[BITACORA] OT-002: DIAGNOSTICADA -> EN_REPARACION (por jefe)
+[BITACORA] OT-002: EN_REPARACION -> LISTA (por Ana)
+[SMTP] Correo a cliente@correo.com: "Su orden OT-002 está lista para retirar"
+[RECHAZADO] OT-002: de LISTA no se puede pasar a CANCELADA
+Costo total: 205.50 Bs (lo calcula CalculadoraDeCostos)
+Vencida: True (lo calcula MetricasDeOrden)
+-- el cliente prefiere WhatsApp: se cambia la PIEZA, no el servicio --
+[BITACORA] OT-003: RECIBIDA -> DIAGNOSTICADA (por recepcion)
+[BITACORA] OT-003: DIAGNOSTICADA -> EN_REPARACION (por jefe)
+[BITACORA] OT-003: EN_REPARACION -> LISTA (por Bruno)
+[WHATSAPP] +591 70011223: "Su orden OT-003 está lista para retirar"
+-- prueba sin servidor de correo: mismo servicio, canal de mentira --
+[BITACORA] OT-004: RECIBIDA -> DIAGNOSTICADA (por recepcion)
+[BITACORA] OT-004: DIAGNOSTICADA -> EN_REPARACION (por jefe)
+[BITACORA] OT-004: EN_REPARACION -> LISTA (por Ana)
+[REGISTRO INTERNO] (no se envio nada) para cliente2@correo.com: "Su orden OT-004 está lista para retirar"
+[BITACORA] OT-002: LISTA -> ENTREGADA (por recepcion)
+-- reporte: recibe el contrato de LECTURA, no el repositorio --
+[REPORTE] LISTA: 2 orden(es)
+[REPORTE] ENTREGADA: 1 orden(es)
+Un flujo, 5 principios juntos. Ningun servicio se abrio para cambiar politica ni canal.
+
+
+-----------------------------------------------------------------------
+LO QUE HAY QUE MIRAR EN ESTAS DOS SALIDAS
+-----------------------------------------------------------------------
+
+1. En el ANTES la orden avisa SIEMPRE por [SMTP]. No hay forma de que avise
+   por otra cosa sin abrir la clase, porque ella misma hace el new.
+
+2. En el DESPUÉS el MISMO ServicioDeOrdenes produjo [SMTP], [WHATSAPP] y
+   [REGISTRO INTERNO] en tres corridas. Nadie lo tocó: solo cambió la pieza
+   que recibió por el constructor. Eso es DIP.
+
+3. La línea [ASIGNACION] sale dos veces con la misma orden y los mismos dos
+   técnicos, y da técnicos distintos (Bruno por menor carga, Ana por
+   especialidad). El servicio que asigna es el mismo. Eso es OCP.
+
+4. El [RECHAZADO] de LISTA a CANCELADA aparece en las dos salidas: la regla
+   de negocio no cambió. Lo que cambió es dónde vive — en el ANTES, en un
+   switch dentro de la orden; en el DESPUÉS, dentro de EstadoLista.
+
+5. El [REPORTE] lo produce una clase que recibió IConsultaDeOrdenes y por lo
+   tanto NO tiene Guardar() disponible. Eso es ISP: el invariante "M6 es de
+   solo lectura" ya no depende de que el programador se acuerde.
+
+-----------------------------------------------------------------------
+NOTA DE HONESTIDAD SOBRE ESTA SALIDA
+-----------------------------------------------------------------------
+Esta salida está derivada a mano leyendo el código, NO capturada de una
+ejecución real: la máquina donde se escribió no tiene el SDK de .NET
+instalado (solo el csc.exe viejo de .NET Framework, que no compila la
+sintaxis de estos archivos).
+
+Para verificarla de verdad hace falta .NET 6 o superior:
+
+    dotnet new console -o demo
+    (copiar los dos .cs a demo/ y llamar a Sigot.Antes.Demo.Correr()
+     y Sigot.Despues.Demo.Correr() desde Program.cs)
+    dotnet run --project demo
+
+Antes de entregar, correlo y reemplazá este archivo con la salida real.
