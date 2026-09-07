@@ -10,182 +10,65 @@ Roberto Angel Ayala Lecoña · Arquitectura de Software · UAB · Gestión 2026-
 
 | Archivo | Qué es |
 |---|---|
-| [`antes.drawio`](antes.drawio) | Diagrama **ANTES**: el modelo del H1 tal cual, con los seis olores marcados en rojo |
-| [`despues.drawio`](despues.drawio) | Diagrama **DESPUÉS**: el modelo con SOLID aplicado, interfaces en verde y clases nuevas en amarillo |
+| [`antes.drawio`](antes.drawio) | Diagrama **ANTES**: las clases del H1 con los seis olores marcados en rojo |
+| [`despues.drawio`](despues.drawio) | Diagrama **DESPUÉS**: las clases con SOLID aplicado, interfaces en verde y clases nuevas en amarillo |
 | este `README.md` | Los dos diagramas también en Mermaid (se ven directo en GitHub) + el texto del refactor |
 | [`codigo/`](codigo/) | El mismo refactor hecho C# ejecutable, para demostrar que el diagrama no es decorativo |
 
-Los `.drawio` se abren en [app.diagrams.net](https://app.diagrams.net) (*File → Open from → Device*) o con la extensión **Draw.io Integration** de VS Code. Están guardados **sin comprimir**, así que el diff de git es legible.
+Los `.drawio` se abren en [app.diagrams.net](https://app.diagrams.net) (*File → Open from → Device*) o con la extensión **Draw.io Integration** de VS Code.
+
+> **Sobre el nivel de detalle:** los diagramas muestran **solo las clases y sus relaciones**, sin listar
+> atributos ni métodos. La decisión es a propósito: lo que este hito discute es *qué responsabilidad
+> vive en qué clase* y *hacia dónde apuntan las dependencias*, y eso se lee mejor sin el ruido de las
+> firmas. El detalle completo de atributos y métodos está en el diagrama del H1
+> ([`../docs/03-diagrama-clases.md`](../docs/03-diagrama-clases.md)) y, ya refactorizado, en [`codigo/`](codigo/).
 
 ---
 
-## 1. ANTES — el diagrama del H1 y sus problemas
+## 1. ANTES — las clases del H1 y sus problemas
 
-Este es el modelo del H1 **sin retoques**: los mismos atributos, los mismos métodos y las mismas relaciones que entregué el 30-ago. Lo que agrego acá no son cambios, son las notas rojas que señalan lo que ya estaba mal.
+Las mismas clases y las mismas relaciones que entregué el 30-ago, sin retoques. Lo que agrego no son
+cambios: son las notas rojas que señalan lo que ya estaba mal.
 
 ```mermaid
 classDiagram
     direction LR
 
-    class Usuario {
-        <<abstract>>
-        -int id
-        -string nombre
-        -string usuario
-        -string email
-        -bool activo
-        +puedeEjecutar(accion) bool
-        +permisos() List~string~
-    }
-    class Recepcionista {
-        +registrarOrden(cliente, equipo, diagnostico) OrdenDeTrabajo
-        +entregarOrden(orden, receptor) void
-    }
-    class Tecnico {
-        -string especialidad
-        -int capacidadMaxima
-        +cargaActual() int
-        +estaDisponible() bool
-        +registrarAvance(orden, comentario) Avance
-    }
-    class JefeDeTaller {
-        +asignar(orden, tecnico) Asignacion
-        +reasignar(orden, tecnico, motivo) Asignacion
-        +repriorizar(orden, prioridad) void
-    }
-    class Cliente {
-        -int id
-        -string nombreCompleto
-        -string documento
-        -string telefono
-        -string email
-        +canalPreferido() Canal
-        +ordenesAbiertas() List~OrdenDeTrabajo~
-    }
-    class Equipo {
-        -int id
-        -string tipo
-        -string marca
-        -string modelo
-        -string numeroSerie
-        -string accesorios
-        +identificacion() string
-        +historialDeOrdenes() List~OrdenDeTrabajo~
-    }
-    class OrdenDeTrabajo {
-        -string codigo
-        -DateTime fechaRecepcion
-        -string diagnosticoInicial
-        -Prioridad prioridad
-        -EstadoOrden estado
-        -DateTime fechaPrometida
-        -DateTime fechaCierre
-        +puedeTransicionarA(destino) bool
-        +cambiarEstado(destino, autor) void
-        +agregarAvance(comentario, autor) Avance
-        +consumirRepuesto(repuesto, cantidad) UsoDeRepuesto
-        +tecnicoActual() Tecnico
-        +costoTotal() Decimal
-        +tiempoDeResolucion() Duracion
-        +estaVencida() bool
-    }
-    class EstadoOrden {
-        <<enumeration>>
-        RECIBIDA
-        DIAGNOSTICADA
-        EN_REPARACION
-        LISTA
-        ENTREGADA
-        CANCELADA
-    }
-    class Prioridad {
-        <<enumeration>>
-        BAJA
-        NORMAL
-        ALTA
-        URGENTE
-    }
-    class Asignacion {
-        -int id
-        -DateTime fechaAsignacion
-        -DateTime fechaLiberacion
-        -string motivo
-        +estaVigente() bool
-        +duracion() Duracion
-    }
-    class Avance {
-        -int id
-        -DateTime fecha
-        -EstadoOrden estadoAnterior
-        -EstadoOrden estadoNuevo
-        -string comentario
-        +esCambioDeEstado() bool
-    }
-    class Repuesto {
-        -string codigo
-        -string descripcion
-        -int stock
-        -int stockMinimo
-        -Decimal precioUnitario
-        +hayStock(cantidad) bool
-        +descontar(cantidad) void
-        +bajoMinimo() bool
-    }
-    class UsoDeRepuesto {
-        -int cantidad
-        -Decimal precioUnitario
-        +subtotal() Decimal
-    }
-    class Notificacion {
-        -int id
-        -Canal canal
-        -string destino
-        -string asunto
-        -string mensaje
-        -DateTime fechaEnvio
-        -EstadoEnvio estadoEnvio
-        -int intentos
-        +enviar() bool
-        +reintentar() bool
-    }
-    class Canal {
-        <<enumeration>>
-        CORREO
-        WHATSAPP
-        SMS
-        REGISTRO_INTERNO
-    }
-    class EstadoEnvio {
-        <<enumeration>>
-        PENDIENTE
-        ENVIADA
-        FALLIDA
-    }
-    class ReporteOperativo {
-        -DateTime desde
-        -DateTime hasta
-        +cargaPorTecnico() List~FilaCarga~
-        +tiemposDeResolucion() List~FilaTiempo~
-        +ordenesPorEstado() Map~EstadoOrden, int~
-    }
+    class Usuario { <<abstract>> }
+    class Recepcionista
+    class Tecnico
+    class JefeDeTaller
+    class Cliente
+    class Equipo
+    class OrdenDeTrabajo
+    class EstadoOrden { <<enumeration>> }
+    class Prioridad { <<enumeration>> }
+    class Asignacion
+    class Avance
+    class Repuesto
+    class UsoDeRepuesto
+    class Notificacion
+    class Canal { <<enumeration>> }
+    class EstadoEnvio { <<enumeration>> }
+    class ReporteOperativo
 
     Usuario <|-- Recepcionista
     Usuario <|-- Tecnico
     Usuario <|-- JefeDeTaller
 
-    Cliente "1" --> "0..*" Equipo : posee
-    Cliente "1" --> "0..*" OrdenDeTrabajo : solicita
-    Equipo "1" --> "0..*" OrdenDeTrabajo : origina
+    Cliente --> Equipo : posee
+    Cliente --> OrdenDeTrabajo : solicita
+    Equipo --> OrdenDeTrabajo : origina
 
     OrdenDeTrabajo "1" *-- "0..*" Avance : bitacora
     OrdenDeTrabajo "1" *-- "0..*" UsoDeRepuesto : consume
     OrdenDeTrabajo "1" o-- "0..*" Asignacion : historial
-    Tecnico "1" --> "0..*" Asignacion : recibe
-    Repuesto "1" --> "0..*" UsoDeRepuesto : se usa en
+    Tecnico --> Asignacion : recibe
+    Repuesto --> UsoDeRepuesto : se usa en
 
     OrdenDeTrabajo --> EstadoOrden : estado
     OrdenDeTrabajo --> Prioridad : prioridad
-    Avance "0..*" --> "1" Usuario : autor
+    Avance --> Usuario : autor
     OrdenDeTrabajo ..> Notificacion : dispara (new)
     Notificacion --> Canal : por
     Notificacion --> EstadoEnvio : resultado
@@ -197,219 +80,102 @@ classDiagram
 
 | # | Dónde | Qué está mal | Principio roto |
 |---|---|---|---|
-| 1 | `OrdenDeTrabajo` | **Clase gorda.** Custodia el ciclo de vida, calcula el costo (`costoTotal()`) y calcula tiempos (`tiempoDeResolucion()`, `estaVencida()`). Un cambio de tarifa obliga a tocar la clase que guarda los estados. | **SRP** |
-| 2 | `OrdenDeTrabajo.puedeTransicionarA()` | **Switch por tipo.** La tabla de transiciones vive como un `switch` sobre `EstadoOrden` dentro de la clase. Agregar un estado obliga a modificarla y a re-probar todo el ciclo de vida. | **OCP** |
+| 1 | `OrdenDeTrabajo` | **Clase gorda.** Custodia el ciclo de vida, calcula el costo y calcula tiempos. Un cambio de tarifa obliga a tocar la clase que guarda los estados. | **SRP** |
+| 2 | `OrdenDeTrabajo.puedeTransicionarA()` | **Switch por tipo.** La tabla de transiciones vive como un `switch` dentro de la clase. Agregar un estado obliga a modificarla y a re-probar todo el ciclo de vida. | **OCP** |
 | 3 | `Notificacion.enviar()` | **Switch por tipo + `new` incrustado.** Hace `switch(canal)` y adentro instancia el proveedor concreto (`new ClienteSmtp()`). Sumar WhatsApp obliga a modificar la clase, y no se la puede probar sin mandar correos de verdad. | **OCP** + **DIP** |
-| 4 | `OrdenDeTrabajo ..> Notificacion` | **`new` incrustado en el dominio.** La orden crea sus `Notificacion` con `new`: M1 (dominio) queda dependiendo de M5 (infraestructura) en vez de depender de un contrato. | **DIP** |
+| 4 | `OrdenDeTrabajo ..> Notificacion` | **`new` incrustado en el dominio.** La orden crea sus `Notificacion` con `new`: M1 (dominio) depende de M5 (infraestructura) en vez de depender de un contrato. | **DIP** |
 | 5 | `ReporteOperativo` | **Módulo de lectura con acceso total.** Alcanza las clases concretas del dominio y ve su API completa, incluida la de escritura, aunque por diseño M6 es de solo lectura. | **ISP** + **DIP** |
 | 6 | `Tecnico` | **Doble responsabilidad.** Es identidad que se autentica (M0) y a la vez recurso con capacidad de trabajo (M2). Dos módulos, dos ritmos de cambio, una sola clase. | **SRP** |
 
-> Los olores 1, 2 y 6 ya los había dejado anotados por escrito en el H1, en la sección *"Lo que ya sé que voy a refactorizar"* de [`../docs/03-diagrama-clases.md`](../docs/03-diagrama-clases.md). Los olores 3, 4 y 5 los detecté al preparar este hito.
+> Los olores 1, 2 y 6 ya los había dejado anotados por escrito en el H1, en la sección *"Lo que ya sé que
+> voy a refactorizar"* de [`../docs/03-diagrama-clases.md`](../docs/03-diagrama-clases.md). Los olores 3, 4
+> y 5 los detecté al preparar este hito.
 
 ---
 
-## 2. DESPUÉS — el mismo modelo con SOLID aplicado
+## 2. DESPUÉS — las mismas clases con SOLID aplicado
 
-`Cliente`, `Equipo`, `Repuesto`, `UsoDeRepuesto` y `Prioridad` no cambian con este refactor y se omiten para no ensuciar el foco; están completos en el ANTES.
+`Cliente`, `Equipo`, `Repuesto`, `UsoDeRepuesto` y `Prioridad` no cambian con este refactor y se omiten
+para no ensuciar el foco; están completas en el ANTES.
 
 ```mermaid
 classDiagram
     direction LR
 
-    %% ---------- M0 · identidad ----------
-    class Usuario {
-        <<abstract>>
-        -int id
-        -string nombre
-        -string usuario
-        -string email
-        -bool activo
-        +puedeEjecutar(accion) bool
-        +permisos() List~string~
-    }
-    class Recepcionista {
-        +registrarOrden(cliente, equipo, diagnostico) OrdenDeTrabajo
-        +entregarOrden(orden, receptor) void
-    }
-    class Tecnico {
-        -string especialidad
-        +esDe(especialidad) bool
-    }
-    class JefeDeTaller {
-        +solicitarAsignacion(orden) Asignacion
-        +repriorizar(orden, prioridad) void
-    }
-    class PerfilDeCapacidad {
-        -int capacidadMaxima
-        -int ordenesActivas
-        +cargaActual() int
-        +estaDisponible() bool
-    }
+    class Usuario { <<abstract>> }
+    class Recepcionista
+    class Tecnico
+    class JefeDeTaller
+    class PerfilDeCapacidad
 
-    %% ---------- M1 · orden adelgazada ----------
-    class OrdenDeTrabajo {
-        -string codigo
-        -DateTime fechaRecepcion
-        -string diagnosticoInicial
-        -Prioridad prioridad
-        -EstadoDeOrden estado
-        -DateTime fechaPrometida
-        -DateTime fechaCierre
-        +cambiarEstado(destino, autor) void
-        +registrarAvance(comentario, autor) Avance
-        +bitacora() List~Avance~
-    }
-    class EstadoDeOrden {
-        <<interface>>
-        +nombre() EstadoOrden
-        +puedeTransicionarA(destino) bool
-        +siguientesPosibles() List~EstadoOrden~
-    }
-    class EstadoRecibida { +puedeTransicionarA(destino) bool }
-    class EstadoDiagnosticada { +puedeTransicionarA(destino) bool }
-    class EstadoEnReparacion { +puedeTransicionarA(destino) bool }
-    class EstadoLista { +puedeTransicionarA(destino) bool }
-    class EstadoEntregada { +puedeTransicionarA(destino) bool }
-    class EstadoCancelada { +puedeTransicionarA(destino) bool }
-    class Avance {
-        -int id
-        -DateTime fecha
-        -EstadoOrden estadoAnterior
-        -EstadoOrden estadoNuevo
-        -string comentario
-        +esCambioDeEstado() bool
-    }
-    class EstadoOrden {
-        <<enumeration>>
-        RECIBIDA
-        DIAGNOSTICADA
-        EN_REPARACION
-        LISTA
-        ENTREGADA
-        CANCELADA
-    }
+    class OrdenDeTrabajo
+    class Avance
+    class EstadoOrden { <<enumeration>> }
+    class EstadoDeOrden { <<interface>> }
+    class EstadoRecibida
+    class EstadoDiagnosticada
+    class EstadoEnReparacion
+    class EstadoLista
+    class EstadoEntregada
+    class EstadoCancelada
 
-    %% ---------- cálculos extraídos ----------
-    class CalculadoraDeCostos {
-        +costoTotal(orden) Decimal
-        +subtotalRepuestos(orden) Decimal
-    }
-    class MetricasDeOrden {
-        +tiempoDeResolucion(orden) Duracion
-        +estaVencida(orden) bool
-    }
+    class CalculadoraDeCostos
+    class MetricasDeOrden
 
-    %% ---------- M2 · asignación ----------
-    class ServicioDeAsignacion {
-        -EstrategiaDeAsignacion estrategia
-        +asignar(orden) Asignacion
-        +reasignar(orden, motivo) Asignacion
-    }
-    class EstrategiaDeAsignacion {
-        <<interface>>
-        +elegirTecnico(orden, candidatos) Tecnico
-    }
-    class AsignacionPorEspecialidad { +elegirTecnico(orden, candidatos) Tecnico }
-    class AsignacionPorMenorCarga { +elegirTecnico(orden, candidatos) Tecnico }
-    class AsignacionPorAntiguedad { +elegirTecnico(orden, candidatos) Tecnico }
-    class Asignacion {
-        -int id
-        -DateTime fechaAsignacion
-        -DateTime fechaLiberacion
-        -string motivo
-        +estaVigente() bool
-        +duracion() Duracion
-    }
+    class ServicioDeAsignacion
+    class EstrategiaDeAsignacion { <<interface>> }
+    class AsignacionPorEspecialidad
+    class AsignacionPorMenorCarga
+    class AsignacionPorAntiguedad
+    class Asignacion
 
-    %% ---------- M5 · notificaciones ----------
-    class PublicadorDeEventos {
-        <<interface>>
-        +publicar(evento) void
-    }
-    class ServicioDeNotificacion {
-        -List~CanalDeEnvio~ canales
-        +publicar(evento) void
-        +reintentarFallidas() int
-    }
-    class CanalDeEnvio {
-        <<interface>>
-        +soporta(canal) bool
-        +enviar(notificacion) ResultadoEnvio
-    }
-    class CanalCorreoSmtp { +enviar(notificacion) ResultadoEnvio }
-    class CanalWhatsAppApi { +enviar(notificacion) ResultadoEnvio }
-    class CanalSmsGateway { +enviar(notificacion) ResultadoEnvio }
-    class CanalRegistroInterno { +enviar(notificacion) ResultadoEnvio }
-    class Notificacion {
-        -int id
-        -string destino
-        -string asunto
-        -string mensaje
-        -DateTime fechaEnvio
-        -EstadoEnvio estadoEnvio
-        -int intentos
-        +estaPendiente() bool
-    }
+    class PublicadorDeEventos { <<interface>> }
+    class ServicioDeNotificacion
+    class CanalDeEnvio { <<interface>> }
+    class CanalCorreoSmtp
+    class CanalWhatsAppApi
+    class CanalSmsGateway
+    class CanalRegistroInterno
+    class Notificacion
 
-    %% ---------- M6 · reportes ----------
-    class ConsultaDeOrdenes {
-        <<interface>>
-        +enRango(desde, hasta) List~OrdenDeTrabajo~
-        +contarPorEstado() Map~EstadoOrden, int~
-    }
-    class RepositorioDeOrdenes {
-        <<interface>>
-        +guardar(orden) void
-        +porCodigo(codigo) OrdenDeTrabajo
-    }
-    class RepositorioOrdenesSql {
-        +enRango(desde, hasta) List~OrdenDeTrabajo~
-        +contarPorEstado() Map~EstadoOrden, int~
-        +guardar(orden) void
-        +porCodigo(codigo) OrdenDeTrabajo
-    }
-    class ReporteOperativo {
-        -DateTime desde
-        -DateTime hasta
-        +cargaPorTecnico() List~FilaCarga~
-        +tiemposDeResolucion() List~FilaTiempo~
-        +ordenesPorEstado() Map~EstadoOrden, int~
-    }
+    class ConsultaDeOrdenes { <<interface>> }
+    class RepositorioDeOrdenes { <<interface>> }
+    class RepositorioOrdenesSql
+    class ReporteOperativo
 
     Usuario <|-- Recepcionista
     Usuario <|-- Tecnico
     Usuario <|-- JefeDeTaller
-    Tecnico "1" --> "1" PerfilDeCapacidad : capacidad
+    Tecnico --> PerfilDeCapacidad : capacidad
 
     OrdenDeTrabajo "1" *-- "0..*" Avance : bitacora
-    OrdenDeTrabajo --> EstadoDeOrden : estado (contrato)
+    OrdenDeTrabajo --> EstadoDeOrden : estado
     EstadoDeOrden <|.. EstadoRecibida
     EstadoDeOrden <|.. EstadoDiagnosticada
     EstadoDeOrden <|.. EstadoEnReparacion
     EstadoDeOrden <|.. EstadoLista
     EstadoDeOrden <|.. EstadoEntregada
     EstadoDeOrden <|.. EstadoCancelada
-    EstadoDeOrden ..> EstadoOrden : nombre
+    EstadoDeOrden ..> EstadoOrden
 
     CalculadoraDeCostos ..> OrdenDeTrabajo : lee
     MetricasDeOrden ..> OrdenDeTrabajo : lee
 
     OrdenDeTrabajo ..> PublicadorDeEventos : publica OrdenLista
     PublicadorDeEventos <|.. ServicioDeNotificacion
-    ServicioDeNotificacion "1" --> "1..*" CanalDeEnvio : canales
+    ServicioDeNotificacion --> CanalDeEnvio : canales
     CanalDeEnvio <|.. CanalCorreoSmtp
     CanalDeEnvio <|.. CanalWhatsAppApi
     CanalDeEnvio <|.. CanalSmsGateway
     CanalDeEnvio <|.. CanalRegistroInterno
-    ServicioDeNotificacion "1" --> "0..*" Notificacion : registra
+    ServicioDeNotificacion --> Notificacion : registra
 
     JefeDeTaller ..> ServicioDeAsignacion : delega
     ServicioDeAsignacion --> EstrategiaDeAsignacion : estrategia
     EstrategiaDeAsignacion <|.. AsignacionPorEspecialidad
     EstrategiaDeAsignacion <|.. AsignacionPorMenorCarga
     EstrategiaDeAsignacion <|.. AsignacionPorAntiguedad
-    ServicioDeAsignacion "1" --> "0..*" Asignacion : crea
-    ServicioDeAsignacion ..> PerfilDeCapacidad : consulta carga
+    ServicioDeAsignacion --> Asignacion : crea
 
     ConsultaDeOrdenes <|-- RepositorioDeOrdenes
     ReporteOperativo --> ConsultaDeOrdenes : solo lectura
@@ -433,8 +199,8 @@ classDiagram
 ## 4. El diagrama, hecho código
 
 En [`codigo/`](codigo/) está el mismo refactor en C#, escrito con la estructura de 4 actos
-(**CONTRATOS → MODELO → PIEZAS → COORDINADORES**). Sirve para demostrar que el diagrama
-DESPUÉS es implementable y que los principios no son adorno:
+(**CONTRATOS → MODELO → PIEZAS → COORDINADORES**). Sirve para demostrar que el diagrama DESPUÉS es
+implementable y que los principios no son adorno:
 
 | Acto | En el código | En [`despues.drawio`](despues.drawio) |
 |---|---|---|
